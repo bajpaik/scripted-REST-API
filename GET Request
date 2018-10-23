@@ -1,3 +1,7 @@
+// put the relative path as : /INSERT/{name_of_ci}
+// hence the resource path becomes : /api/80404/populate_cmdb/INSERT/{name_of_ci}
+
+
 (function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
 
   var requestTabledata = request.pathParams.table_name;
