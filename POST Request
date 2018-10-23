@@ -1,0 +1,76 @@
+//put the relative path as : /get/{table_name}
+//hence , resource path becomes : <base_api_path>/api/80404/populate_cmdb/get/{table_name}
+
+
+
+
+
+
+(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+
+	//GET ALL THE REQUEST PARAMETERS
+	var queryParameters = request.queryParams;
+	
+	 if (!((queryParameters.hasOwnProperty("u_category_desired"))&&(queryParameters.hasOwnProperty("category"))&& (queryParameters.hasOwnProperty("install_status")) && (queryParameters.hasOwnProperty("u_license_type"))&&(queryParameters.hasOwnProperty("u_ci_id"))&&(queryParameters.hasOwnProperty("asset_tag"))&&(queryParameters.hasOwnProperty("subcategory"))))
+	 
+	 {
+
+		 
+		 
+		 
+        //If request parameters not set or was malformed, return an error.
+        response.setStatus(417);//set the status to indicate a bad argument
+        return 'Unable to process request. Request fields \'query_fields\' not defined. ' ;
+            
+    }
+	
+	//Glide the table on which you want to post the record.
+	var gr = new GlideRecord('cmdb_ci_appl');
+	
+	
+	var req = request.pathParams.name_of_ci;
+	
+		
+	gr.name = req;
+	gr.asset_tag = request.queryParams.asset_tag.toString();
+	gr.u_ci_id = request.queryParams.u_ci_id.toString();
+	gr.install_status = request.queryParams.install_status.toString();
+	gr.category = request.queryParams.category.toString();
+	gr.subcategory = request.queryParams.subcategory.toString();
+	gr.u_license_type = request.queryParams.u_license_type.toString();
+	gr.u_category_desired = request.queryParams.u_category_desired.toString();
+	
+	gr.insert();
+
+	//Set Response
+	
+	var resDetails = {
+		
+		"nameofCMDB": req,
+		"CIclass" : gr.sys_class_name,
+		"sys_id" : gr.getUniqueValue(),
+		"CI ID" : gr.u_ci_id,
+		"Install Status" : gr.install_status,
+		"Category" : gr.category,
+		"SubCategory": gr.subcategory,
+		"License Type" : gr.u_license_type,
+		"Category (Desired)" : gr.u_category_desired,
+		"query parms": request.queryParams
+		
+	};
+	
+	response.setStatus(201);
+	response.setContentType('application/json');
+	response.setLocation(request.url);
+	response.setBody(resDetails);
+	
+	
+	
+	
+	
+	
+	
+	
+//	 new postCMDB().postdetails(request.pathParams.class_name);
+
+})(request, response);
