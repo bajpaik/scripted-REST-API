@@ -1,0 +1,45 @@
+(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+
+  var requestTabledata = request.pathParams.table_name;
+// Get value of the ni_query query parameter passed in the URL
+var requestNIQuery = request.queryParams.name_cmdb;
+
+// Query the sys_user table to get the user record for the user passed in
+// the user_id path parameter.  
+var requestTableName = new GlideRecord('cmdb_ci');
+requestTableName.get('cmdb_ci',requestTabledata);
+
+
+
+// Get the count of active NeedIt table records where the user from the
+// user_name path parameter is the Requested for.  The encoded query is from the
+// Query Parameter Associations.  Group by category.
+var userNICount = new GlideAggregate('cmdb_ci');
+userNICount.addAggregate('COUNT');
+userNICount.addQuery('name',requestTableName.sys_id);
+userNICount.addEncodedQuery(requestNIQuery);
+userNICount.groupBy('sys_class_name');
+userNICount.query();
+
+
+var needitRecs = 0;
+var niUserRecs = [];
+var needitRecsCount = 0;
+
+while (userNICount.next()) {
+	needitRecs = userNICount.getAggregate('COUNT');
+	var reqType = userNICount.sys_class_name.getDisplayValue();
+	niUserRecs.push({"requestType": reqType, "count": needitRecs});
+	needitRecsCount = parseInt(needitRecsCount) + parseInt(needitRecs);
+}
+
+//Create a body object.  Add property value pairs to the body.
+var body = {};
+body.totalUserNIRecs = needitRecsCount;
+body.catCounts = niUserRecs;
+body.user = {"Table name": requestTableName.name,
+"Table ID": requestTableName.sys_id};
+
+// Send the response object, which is returned to the requestor, to the body object.
+response.setBody(body);
+})(request, response);
